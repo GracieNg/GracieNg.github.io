@@ -1,0 +1,62 @@
+/* ============================================================
+   LOCAL FONTS — offline-safe @font-face declarations
+   Place the downloaded .woff2 files in this same /fonts folder
+   with the exact filenames referenced below.
+   Fonts: Fraunces, Newsreader, JetBrains Mono (all SIL OFL, free to bundle).
+   ============================================================ */
+
+/* ---------- FRAUNCES (display serif) ---------- */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('fraunces-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal; font-weight: 500; font-display: swap;
+  src: url('fraunces-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal; font-weight: 600; font-display: swap;
+  src: url('fraunces-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url('fraunces-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal; font-weight: 800; font-display: swap;
+  src: url('fraunces-800.woff2') format('woff2');
+}
+
+/* ---------- NEWSREADER (body serif) ---------- */
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('newsreader-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal; font-weight: 500; font-display: swap;
+  src: url('newsreader-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic; font-weight: 400; font-display: swap;
+  src: url('newsreader-italic-400.woff2') format('woff2');
+}
+
+/* ---------- JETBRAINS MONO (labels / UI) ---------- */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('jetbrainsmono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal; font-weight: 500; font-display: swap;
+  src: url('jetbrainsmono-500.woff2') format('woff2');
+}

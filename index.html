@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valuing Education in the Age of AI — Grace Nguyen</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<script src="lib/d3.min.js"></script>
+<script src="lib/three.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a17;
+    --paper: #f4f1ea;
+    --paper-deep: #e8e3d7;
+    --accent: #c1440e;       /* burnt sienna */
+    --accent-2: #2d4a3e;     /* deep green */
+    --accent-3: #b08544;     /* ochre */
+    --muted: #6b6356;
+    --line: #d4cdbf;
+    --t1: #c1440e;
+    --t2: #2d4a3e;
+    --t3: #3a5a7a;
+    --t4: #b08544;
+    --t5: #7a4a6e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 32px;
+    background: rgba(244,241,234,0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  nav .brand { font-weight: 500; color: var(--ink); }
+  nav .links { display: flex; gap: 22px; flex-wrap: wrap; }
+  nav .links a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  nav .links a:hover { color: var(--accent); }
+  @media (max-width: 720px){ nav .links { display: none; } }
+
+  /* ---------- HEADER / HERO ---------- */
+  header {
+    position: relative;
+    height: 100vh; min-height: 640px;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+    background: radial-gradient(ellipse at 70% 20%, #fbf8f1 0%, var(--paper) 55%, var(--paper-deep) 100%);
+  }
+  #viz { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hero-copy {
+    position: relative; z-index: 5;
+    padding: 0 32px 64px; max-width: 1100px;
+    pointer-events: none;
+  }
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 18px;
+  }
+  .hero-copy h1 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: clamp(2.6rem, 7vw, 5.6rem); line-height: 0.98;
+    letter-spacing: -0.02em; color: var(--ink); max-width: 16ch;
+    text-shadow: 0 1px 0 rgba(244,241,234,0.6);
+  }
+  .hero-copy .sub {
+    margin-top: 22px; font-size: clamp(1rem,1.6vw,1.3rem);
+    color: var(--muted); max-width: 52ch; font-style: italic;
+  }
+  .hero-meta {
+    margin-top: 26px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.06em; color: var(--ink);
+    text-transform: uppercase;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    z-index: 6; font-family:'JetBrains Mono',monospace; font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{transform:translate(-50%,0);} 50%{transform:translate(-50%,8px);} }
+
+  .node-tip {
+    position: fixed; z-index: 50; pointer-events: none;
+    background: var(--ink); color: var(--paper);
+    padding: 10px 14px; border-radius: 3px; max-width: 260px;
+    font-family: 'Newsreader', serif; font-size: 14px; line-height: 1.4;
+    opacity: 0; transition: opacity .15s; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  .node-tip .tt { font-family:'JetBrains Mono',monospace; font-size: 10px; letter-spacing:.1em; text-transform: uppercase; display:block; margin-bottom:4px; opacity:.7; }
+
+  /* ---------- SECTIONS ---------- */
+  main { position: relative; z-index: 10; background: var(--paper); }
+  section.block {
+    max-width: 760px; margin: 0 auto; padding: 78px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    letter-spacing: 0.16em; color: var(--accent); text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(1.8rem, 4vw, 2.9rem); line-height: 1.05;
+    letter-spacing: -0.015em; margin-bottom: 28px; max-width: 20ch;
+  }
+  h3 {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem;
+    margin: 36px 0 12px; color: var(--accent-2);
+  }
+  p { margin-bottom: 20px; }
+  p .lead { font-size: 1.15em; }
+  .dropcap::first-letter {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 3.4em; line-height: 0.8; float: left;
+    padding: 6px 10px 0 0; color: var(--accent);
+  }
+  a.inline { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .callout {
+    background: var(--paper-deep); border-left: 3px solid var(--accent);
+    padding: 20px 24px; margin: 30px 0; font-style: italic; color: var(--ink);
+    font-size: 1.05em;
+  }
+  .video-figure { margin: 36px 0 8px; }
+  .video-figure video {
+    width: 100%; display: block; border-radius: 5px;
+    background: #0a0a0a; box-shadow: 0 20px 60px rgba(0,0,0,.22), 0 0 0 1px var(--line);
+  }
+  .video-figure figcaption {
+    margin-top: 12px; font-size: 14px; color: var(--muted);
+    font-style: italic; line-height: 1.5;
+  }
+  .area-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0 8px; }
+  @media (max-width: 600px){ .area-grid { grid-template-columns: 1fr; } }
+  .area-card {
+    background: var(--paper-deep); border-radius: 4px; padding: 18px 20px;
+    font-size: 15px; line-height: 1.5; border-top: 3px solid var(--accent-2);
+  }
+  .area-card .area-k {
+    display:block; font-family:'JetBrains Mono',monospace; font-size: 12px;
+    letter-spacing:.1em; text-transform: uppercase; color: var(--accent-2);
+    margin-bottom: 8px; font-weight: 500;
+  }
+  .ref-list { font-family: 'Newsreader', serif; font-size: 15px; line-height: 1.5; }
+  .ref-list li { margin-bottom: 14px; list-style: none; padding-left: 1.4em; text-indent: -1.4em; }
+
+  /* theme cards */
+  .themes-grid { display: grid; gap: 0; margin-top: 10px; }
+  .theme-card {
+    border-top: 1px solid var(--line); padding: 30px 0; display: grid;
+    grid-template-columns: 56px 1fr; gap: 22px; align-items: start;
+  }
+  .theme-card:last-child { border-bottom: 1px solid var(--line); }
+  .theme-dot {
+    width: 44px; height: 44px; border-radius: 50%; margin-top: 6px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-weight:500; color: var(--paper);
+    font-size: 15px;
+  }
+  .theme-card h3 { margin: 0 0 8px; color: var(--ink); }
+  .theme-card p { margin-bottom: 0; font-size: 1em; }
+
+  footer {
+    background: var(--ink); color: var(--paper-deep);
+    padding: 60px 32px; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.8;
+  }
+  footer .fwrap { max-width: 760px; margin: 0 auto; }
+  footer a { color: var(--accent-3); text-decoration: none; }
+  footer .disc { font-family:'Newsreader',serif; font-style: italic; font-size: 15px;
+    color: var(--paper); margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.15); line-height:1.55;}
+
+  .grain { position: fixed; inset:0; z-index: 200; pointer-events:none; opacity:.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s, transform .7s; }
+  .reveal.in { opacity: 1; transform: none; }
+  .scatter-pulse { filter: drop-shadow(0 0 6px rgba(193,68,14,.9)) drop-shadow(0 0 12px rgba(193,68,14,.5)); }
+
+  /* ---------- ANALYSIS NEURAL BAND ---------- */
+  .analysis-band {
+    position: relative;
+    background: linear-gradient(180deg, #061226 0%, #0a1b3a 45%, #07142b 100%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding-top: 78px;
+  }
+  /* TEXT INTRO — sits on the dark band, above the brain */
+  .analysis-intro {
+    max-width: 680px; margin: 0 auto; padding: 0 32px 56px;
+    position: relative; z-index: 4;
+  }
+  .analysis-intro h2 { color:#fff; max-width: 22ch;
+    text-shadow: 0 2px 30px rgba(0,40,90,.6); }
+  .analysis-intro p { color:#dce8f7; font-size: 1.05em; }
+  .analysis-intro .sec-num { color: #9fd0ff !important; }
+  .analysis-hint {
+    margin-top: 26px; font-family:'JetBrains Mono',monospace;
+    font-size: 12px; letter-spacing:.10em; text-transform: uppercase;
+    color: #7fb0e8;
+  }
+  /* BRAIN STAGE — its own dedicated area BELOW the text */
+  .brain-stage {
+    position: relative; height: 86vh; min-height: 560px;
+    overflow: hidden; z-index: 1;
+    border-top: 1px solid rgba(120,170,255,.14);
+    background: radial-gradient(ellipse at 50% 42%, rgba(20,46,92,0.55) 0%, rgba(6,18,38,0) 65%);
+  }
+  #brain {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    display: block;
+  }
+  #brain-labels {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    overflow: hidden;
+  }
+  .neuron-word {
+    position: absolute; transform: translate(-50%,-50%);
+    font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+    color: #ffffff; letter-spacing: .02em; font-weight: 500;
+    text-shadow: 0 0 7px rgba(150,200,255,1), 0 0 16px rgba(110,165,255,.95), 0 0 30px rgba(80,140,255,.6);
+    will-change: left, top, opacity;
+  }
+  .neuron-word.theme {
+    font-family: 'Fraunces', serif; font-weight: 700;
+    color: #fff; letter-spacing: -0.01em;
+    text-shadow: 0 0 12px rgba(210,235,255,1), 0 0 28px rgba(160,200,255,1), 0 0 52px rgba(120,170,255,.8);
+  }
+  @media (max-width: 720px){
+    .brain-stage { height: 70vh; min-height: 460px; }
+  }
+
+  /* ---------- BRUSHABLE SCATTERPLOT SECTION ---------- */
+  .scatter-section {
+    max-width: 980px; margin: 0 auto; padding: 78px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .scatter-head { max-width: 760px; }
+  .scatter-controls {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    margin: 26px 0 10px;
+  }
+  .cluster-btn {
+    font-family:'JetBrains Mono',monospace; font-size: 12px; letter-spacing:.08em;
+    text-transform: uppercase; cursor: pointer;
+    background: var(--ink); color: var(--paper); border: none;
+    padding: 12px 20px; border-radius: 3px; transition: background .2s, transform .1s;
+  }
+  .cluster-btn:hover { background: var(--accent); }
+  .cluster-btn:active { transform: translateY(1px); }
+  .cluster-btn.on { background: var(--accent); }
+  .scatter-legend { display:flex; gap:14px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.02em; }
+  .scatter-legend span { display:inline-flex; align-items:center; gap:6px; color: var(--muted); cursor: default; }
+  .scatter-legend i { width:11px; height:11px; border-radius:50%; display:inline-block; }
+  .scatter-readout {
+    font-family:'JetBrains Mono',monospace; font-size: 12px; color: var(--muted);
+    min-height: 1.4em; margin-top: 6px;
+  }
+  #scatter-wrap { position: relative; margin-top: 18px; }
+  #scatter { width: 100%; height: auto; display:block;
+    background: linear-gradient(180deg,#faf8f2,#f1ece1); border:1px solid var(--line); border-radius:4px; cursor: crosshair; }
+  #scatter .bean { transition: opacity .25s; }
+  #scatter .bean-bg { filter: drop-shadow(0 2px 4px rgba(0,0,0,.12)); }
+  #scatter .dimmed { opacity: 0.14 !important; }
+  .scatter-note { font-size: 14px; color: var(--muted); font-style: italic; margin-top: 14px; }
+  .cite {
+    color: var(--accent); cursor: help; white-space: nowrap;
+    border-bottom: 1px dotted var(--accent);
+    font-style: normal;
+  }
+  .cite:hover, .cite.active { background: rgba(193,68,14,0.10); }
+  .cite-pop {
+    position: fixed; z-index: 300; max-width: 340px;
+    background: var(--ink); color: var(--paper);
+    border-radius: 4px; padding: 16px 18px;
+    font-family: 'Newsreader', serif; font-size: 14.5px; line-height: 1.5;
+    box-shadow: 0 12px 40px rgba(0,0,0,.32);
+    opacity: 0; visibility: hidden; transform: translateY(6px);
+    transition: opacity .16s, transform .16s, visibility .16s;
+  }
+  .cite-pop.show { opacity: 1; visibility: visible; transform: none; }
+  .cite-pop .cp-tag {
+    font-family:'JetBrains Mono',monospace; font-size: 10px; letter-spacing:.12em;
+    text-transform: uppercase; color: var(--accent-3); display:block; margin-bottom: 8px;
+  }
+  .cite-pop a {
+    color: var(--accent-3); text-decoration: underline; text-underline-offset: 2px;
+    display:inline-block; margin-top: 10px; font-family:'JetBrains Mono',monospace;
+    font-size: 11px; letter-spacing:.04em; word-break: break-all;
+  }
+  /* reference list rows become anchor targets + show their number */
+  .ref-list li { scroll-margin-top: 90px; transition: background .3s; }
+  .ref-list li.flash { background: rgba(193,68,14,0.12); }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav>
+  <span class="brand">Valuing Education · AI</span>
+  <span class="links">
+    <a href="#rri">RRI</a>
+    <a href="#intro">Intro</a>
+    <a href="#background">Background</a>
+    <a href="#methods">Methods</a>
+    <a href="#codemap">Code Map</a>
+    <a href="#findings">Findings</a>
+    <a href="#recs">Solutions</a>
+    <a href="#reflection">Reflection</a>
+    <a href="#refs">References</a>
+  </span>
+</nav>
+
+<header>
+  <svg id="viz"></svg>
+  <div class="hero-copy">
+    <div class="hero-kicker">Responsible Data Science · Final Portfolio</div>
+    <h1>How AI Changed the Way Students Value Their Education</h1>
+    <p class="sub">A workshop study with undergraduate Data Science &amp; AI students, mapped across five themes.</p>
+    <div class="hero-meta">Grace Nguyen · BSc Data Science &amp; AI · University of the Arts London</div>
+  </div>
+  <div class="scroll-hint">Scroll ↓ · Hover the nodes</div>
+</header>
+
+<div class="node-tip" id="tip"></div>
+
+<main>
+  <!-- SECTION 1: EXEC SUMMARY -->
+  <section class="block reveal" id="summary">
+    <div class="sec-num">01 — Executive Summary</div>
+    <p class="lead dropcap">Generative AI use among UK undergraduates is now near-universal, yet the institutional response — in universities, in policy, and in employer behaviour — has lagged behind. For the students completing their degrees in the middle of this shift, a critical question emerges: how has AI changed the way they value their education?</p>
+    <p>This portfolio investigates that question through a workshop study with twelve undergraduate students on the BSc Data Science and AI programme at UAL. Using thematic analysis of both written workshop responses and focus group discussion, the research identifies five interconnected themes: effort and active involvement as a precondition for genuine learning; authenticity, ownership and pride in human work; critical engagement as a verification burden rather than a labour-saving gain; shifting perceptions of educational value driven by cost, debt and AI together; and AI literacy as simultaneously an opportunity and a threat for graduate prospects.</p>
+    <p>The findings suggest that students are not passive recipients of AI's effects on higher education. They are actively considering what "value" means across cognitive, personal, financial and labour-market dimensions simultaneously — and this adoption cannot be addressed by AI policy alone.</p>
+  </section>
+
+  <!-- SECTION: RESPONSIBLE RESEARCH & INNOVATION (required) -->
+  <section class="block reveal" id="rri">
+    <div class="sec-num">02 — Responsible Research &amp; Innovation</div>
+    <h2>Ethics across the whole project — research and solution alike</h2>
+    <p>Responsible research and innovation (RRI) ran through the project as a thread: from how data was gathered, to how it is reported here, to how the solution is designed. This section covers both halves — ethics of the <em>research</em> and ethics of the <em>innovation</em>.</p>
+
+    <h3>Ethics in the research process</h3>
+    <p>The study was approved by the Unit Leader under the UAL Educational Ethics Code of Practice and its four principles — care, social justice, respect for persons, and beneficence — and followed ESRC research-ethics guidance and data-protection duties under the UK Data Protection Act 2018 and UK-GDPR, enforced by the ICO. In practice: voluntary informed consent with a right to withdraw; survey data anonymised at collection and focus-group recordings pseudonymised; storage only on UAL systems; and lecturers deliberately leaving during the focus group so participants could speak freely.</p>
+    <div class="callout">A further decision was made specifically for this public portfolio: all participant evidence is paraphrased rather than quoted. The original consent contemplated anonymised reporting, not publication on a search-indexed website, so direct quotes could risk re-identifying members of a small cohort. The full quoted analysis is kept in the private appendices submitted to the unit leader — applying UK-GDPR's data-minimisation principle to the act of publishing itself.</div>
+
+    <h3>Ethics in the proposed innovation</h3>
+    <p>Responsible innovation is also built into the solution. The education-route module in Section&nbsp;07 is structured through the EPSRC <strong>AREA framework</strong> <span class="cite" data-ref="stilgoe2013">(Stilgoe, Owen and Macnaghten, 2013)</span>: it <em>anticipates</em> the risk that AI dependency erodes earned skill and that unequal literacy widens divides; <em>reflects</em> on authorship, dependency and verification; <em>engages</em> students as co-designers, not subjects; and <em>acts</em> through an assessed, iterable module. The design does not police students' AI use but treats them as capable agents — an ethic of care extended from research into outcome.</p>
+  </section>
+
+  <!-- SECTION 2: INTRO -->
+  <section class="block reveal" id="intro">
+    <div class="sec-num">03 — Introduction</div>
+    <h2>An education whose terms changed mid-course</h2>
+    <p>In three years, generative AI has moved from curiosity to near-universal presence in UK higher education: HEPI's 2026 survey finds 95% of undergraduates use AI in at least one way, while the share directly including AI-generated text in assessed work has risen to 12%, up from 8% in 2025 and 3% in 2024 <span class="cite" data-ref="hepi2026">(Stephenson and Armstrong, 2026)</span>. This adoption coincides with rising fees, a precarious graduate market, and a sector still working out how to teach, assess and value student work in the age of AI.</p>
+    <h3>Research question</h3>
+    <p>This portfolio asks: <em>How has AI changed the way that students value their education?</em> The question spans not just the financial worth of a degree but how students value their own learning, work, critical engagement and graduate prospects — dimensions they treat as interconnected.</p>
+    <h3>Stakeholders and urgency</h3>
+    <p>The primary stakeholders are current undergraduates, navigating a landscape that shifted after they enrolled; international students, paying higher fees, have an especially acute stake. Universities face questions over their value proposition and assessment integrity, while policymakers and employers shape whether the graduate jobs that justify a degree survive. The urgency is twofold: institutional responses have lagged behind adoption, leaving students to judge AI use alone, and this cohort will be the first to enter a labour market visibly reshaped by AI. As future practitioners of that technology, DSAI students' perceptions are an early indicator of how the next generation of AI practitioners will approach the ethics of their own work.</p>
+  </section>
+
+  <!-- SECTION 3: BACKGROUND -->
+  <section class="block reveal" id="background">
+    <div class="sec-num">04 — Background Research</div>
+    <h2>Three intersecting debates</h2>
+    <p>The research question sits across three debates: AI's integration into higher education, student perceptions of degree value, and AI's impact on the graduate labour market.</p>
+    <h3>AI in higher education</h3>
+    <p>Since ChatGPT's release in late 2022, Milano, McGrane and Leonelli <span class="cite" data-ref="milano2023">(2023)</span> argue that integrating large language models into academic practice raises serious operational, pedagogical and ethical risks — plagiarism, the reliability of AI output, and the validity of traditional assessment. The concern is concrete: HEPI found 95% of UK undergraduates use AI in some way, with direct inclusion of AI-generated text in assessed work rising to 12% in 2026, from 3% in 2024 <span class="cite" data-ref="hepi2026">(Stephenson and Armstrong, 2026)</span>. For some students AI frees cognitive resources for deeper learning; for others it becomes a crutch that undermines independent skill.</p>
+    <h3>Student perceptions of educational value</h3>
+    <p>Cost increasingly shapes how students value their degrees. Undergraduates starting in 2024/25 are expected to borrow an average of £44,690, with only 56% forecast to repay in full <span class="cite" data-ref="dfe2025">(Department for Education, 2025)</span>, and maximum fees rose to £9,535 in 2024 <span class="cite" data-ref="dfe2024">(Department for Education, 2024)</span>. Two-thirds of British graduates accrued more loan interest in 2024–25 than they repaid <span class="cite" data-ref="the2026">(Times Higher Education, 2026)</span>. As AI replicates classroom content, some question whether a degree's academic content justifies its price — while still valuing university socially.</p>
+    <h3>AI and the graduate labour market</h3>
+    <p>The Institute for Public Policy Research estimates up to 8 million UK jobs are at risk from generative AI without intervention, entry-level roles most exposed <span class="cite" data-ref="ippr2024">(IPPR, 2024)</span>. Graduate accountancy adverts fell 44% in 2025 as "Big Four" firms cut intake <span class="cite" data-ref="bm2025">(BM Magazine, 2025)</span>, while the Institute for the Future of Work notes AI is raising the value of human-centric skills as routine analysis is automated <span class="cite" data-ref="ifow2025">(IFOW, 2025)</span> — a paradox in which a degree remains a gatekeeper even as its returns grow uncertain.</p>
+  </section>
+
+  <!-- SECTION 4: METHODS -->
+  <section class="block reveal" id="methods">
+    <div class="sec-num">05 — Methods &amp; Ethics</div>
+    <h2>How the study was designed and conducted</h2>
+    <p>This study investigated how AI has changed the way that students value their education. Twelve undergraduate students from the BSc Data Science and AI programme at UAL participated across two workshop sessions — seven in Session 1 and five in Session 2. The workshop combined a focus group discussion with a written sticky-note exercise, in which participants responded to five open-ended questions about AI and their experience of higher education. Sessions were held in person and recorded via Microsoft Teams, which generated an automated transcript used for analysis.</p>
+    <figure class="video-figure">
+      <video controls preload="metadata" playsinline>
+        <source src="ai_in_edu.mp4" type="video/mp4">
+        Your browser does not support embedded video. <a href="ai_in_edu.mp4">Download the explainer video</a>.
+      </video>
+      <figcaption>An animated overview of the workshop study — its design, the five questions, and how the data was collected and analysed.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ANALYSIS — text first, then the 3D neural brain in its own stage below -->
+  <section class="analysis-band" id="analysis">
+    <div class="analysis-intro reveal">
+      <div class="sec-num" style="color:var(--accent)">05 · a — Analysis</div>
+      <h2>Mapping the words: from codes to themes</h2>
+      <p>Workshop data was analysed using thematic analysis. The transcript was first cleaned to remove researcher prompts and irrelevant content, retaining only substantive participant discussion. Written responses and transcript comments were then coded, with codes grouped into broader themes through an iterative review process and consolidated through group discussion.</p>
+      <p>The neural map below is that coding vocabulary made visible — every glowing word is a real code or theme drawn from the analysis. Theme interpretation and selection in this portfolio reflect the author's own analytical decisions.</p>
+      <div class="analysis-hint">↓ Drag the brain to rotate · the bright words are the themes, the smaller ones are the codes</div>
+    </div>
+    <div class="brain-stage">
+      <div id="brain"></div>
+      <div id="brain-labels"></div>
+    </div>
+  </section>
+
+  <!-- SCATTERPLOT — brushable, magnetic clustering of codes -->
+  <section class="scatter-section reveal" id="codemap">
+    <div class="scatter-head">
+      <div class="sec-num">05 · a.ii — Interactive Code Map</div>
+      <h2>Push, scatter and gather the codes</h2>
+      <p>Each pill below is one of the codes generated during analysis, coloured by its theme. <strong>Move your mouse through them</strong> and they scatter away from the cursor like beans displaced by a hand; <strong>pause on a word</strong> and its whole theme-group gathers together. Word size scales with how often each code appeared across the two sessions.</p>
+    </div>
+    <div class="scatter-controls">
+      <div class="scatter-legend" id="scatterLegend"></div>
+    </div>
+    <div class="scatter-readout" id="scatterReadout">Move your mouse through the words to push them · pause on a word to gather its theme</div>
+    <div id="scatter-wrap"><svg id="scatter"></svg></div>
+    <p class="scatter-note">Frequency values are placeholders pending final coding counts; theme groupings reflect the consolidated analysis.</p>
+  </section>
+
+  <!-- ETHICS continues -->
+  <section class="block reveal" id="ethics">
+    <div class="sec-num">05 · b — Ethics</div>
+    <h2>Ethical framework and safeguards</h2>
+    <p>Ethical approval was granted by the Unit Leader on 12 March 2026. The study followed the UAL Educational Ethics Code of Practice and its four principles — ethics of care, social justice, respect for persons, and beneficence — alongside UK research ethics guidance from the ESRC and data handling requirements under the UK Data Protection Act 2018 and UK-GDPR, as enforced by the Information Commissioner's Office. All participants gave informed consent and were free to withdraw at any time. Survey data was anonymised at collection; focus group recordings were pseudonymised, retaining only year of study; and all data was stored on UAL-managed systems accessible only to the research team.</p>
+    <div class="callout">In preparing this portfolio for public publication, the decision was taken to paraphrase participant evidence rather than quote it directly. While the ethics application permitted anonymised reporting, the original framing did not contemplate publication on a genuinely public, search-indexed website — and direct quotes could create unintended identifiability risks for participants in a small cohort. Paraphrased thematic summaries appear here; the full quoted analysis is retained in the private appendices submitted to the unit leader, reflecting the data-minimisation principle of UK-GDPR.</div>
+  </section>
+
+  <!-- SECTION 5: FINDINGS -->
+  <section class="block reveal" id="findings">
+    <div class="sec-num">06 — Findings</div>
+    <h2>Five interconnected themes</h2>
+    <p>Thematic analysis identified five themes describing how AI has reshaped the way students value their education; the header nodes and the code map above trace the same structure.</p>
+    <div class="themes-grid">
+      <div class="theme-card">
+        <div class="theme-dot" style="background:var(--t1)">01</div>
+        <div>
+          <h3>Effort and active involvement in learning</h3>
+          <p>AI helps learning only when students stay actively involved. Participants drew a sharp line between guided use and outsourcing the thinking, warning that treating AI as a fallback lowers standards and hollows out learning itself.</p>
+        </div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-dot" style="background:var(--t2)">02</div>
+        <div>
+          <h3>Authenticity, ownership and pride in human work</h3>
+          <p>Participants valued their own work over AI output even when they judged the AI version technically stronger, tying pride to the effort of authorship while dismissing AI writing as stylistically uniform.</p>
+        </div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-dot" style="background:var(--t3)">03</div>
+        <div>
+          <h3>Critical engagement and the verification burden</h3>
+          <p>AI shifts effort rather than saving it: vague or fabricated output forces students to verify, edit and redo, moving cognitive labour from generation to checking.</p>
+        </div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-dot" style="background:var(--t4)">04</div>
+        <div>
+          <h3>Shifting perceptions of educational value</h3>
+          <p>Students weighed tuition, debt and AI-replicable content against a degree's worth, while still valuing university for its social and professional networks — a tension international students, paying higher fees, felt most acutely.</p>
+        </div>
+      </div>
+      <div class="theme-card">
+        <div class="theme-dot" style="background:var(--t5)">05</div>
+        <div>
+          <h3>AI literacy as both opportunity and threat</h3>
+          <p>Literacy was seen as a competitive advantage, set against employers' incentive to cut graduate hiring through automation — viewed as a generationally unfair threat.</p>
+        </div>
+      </div>
+    </div>
+    <h3>Synthesis</h3>
+    <p>Together, the themes show students actively reconsidering what they value about their education — across cognitive, personal, financial and labour-market dimensions at once.</p>
+  </section>
+
+  <!-- SECTION 6: RECOMMENDATIONS -->
+  <section class="block reveal" id="recs">
+    <div class="sec-num">07 — Solutions &amp; Innovation</div>
+    <h2>One route: a critical AI-literacy module for first-year students</h2>
+    <p>This portfolio proposes a single, education-route innovation: a short <strong>critical AI-literacy module</strong> in the first year of the BSc Data Science and AI programme, co-designed with students. The route follows from the findings — Themes 1 and 3 show students already sense the line between <em>guided</em> and <em>outsourced</em> use and already carry the verification burden, but lack a shared framework for either.</p>
+    <p>The evidence supports this focus: students tend to have strong <em>functional</em> AI literacy (operating the tools) but weak <em>critical and ethical</em> literacy — evaluating outputs, recognising bias, judging appropriate use — and interventions targeting that dimension remain under-developed <span class="cite" data-ref="unesco2024">(UNESCO, 2024;</span> <span class="cite" data-ref="ou2025">Open University, 2025)</span>. A documented "digital divide" in AI literacy, where better-resourced students outperform peers in critical evaluation, means untaught reliance on AI risks <em>widening</em> inequality — directly echoing this unit's concern with equity.</p>
+
+    <h3>Why this is responsible innovation: the AREA framework</h3>
+    <p>The module is structured through the EPSRC <strong>AREA framework</strong> <span class="cite" data-ref="stilgoe2013">(Stilgoe, Owen and Macnaghten, 2013)</span>, around four commitments:</p>
+    <div class="area-grid">
+      <div class="area-card"><span class="area-k">Anticipate</span>Names the risk the findings surface — AI-as-fallback erodes earned skill, and unequal literacy deepens educational divides.</div>
+      <div class="area-card"><span class="area-k">Reflect</span>Builds in structured reflection on dependency, authorship and verification, not a yes/no compliance question.</div>
+      <div class="area-card"><span class="area-k">Engage</span>Co-designed <em>with</em> students using the same workshop method that produced this research.</div>
+      <div class="area-card"><span class="area-k">Act</span>Delivered as an assessed module with a teach-verify-reflect cycle, piloted and iterated on student feedback.</div>
+    </div>
+
+    <h3>What the module teaches</h3>
+    <p>Three evidence-led components: <strong>(1) guided vs outsourced use</strong> — AI as a thinking aid, not an answer machine; <strong>(2) verification literacy</strong> — checking outputs, spotting fabrication, owning the editing burden; and <strong>(3) equity and ethics</strong> — the literacy divide, data and consent, and one's responsibilities as a future AI practitioner.</p>
+    <div class="callout">Why education, not policy or a tool: policy guardrails depend on others to enact, and a bespoke verification tool needs resources and maintenance this project cannot evidence. An educational intervention is viable now, owned by the people it serves, backed by implementation literature, and — by closing the critical-literacy gap rather than policing it — treats students as capable agents rather than risks to manage.</div>
+  </section>
+
+  <!-- SECTION 7: REFLECTION -->
+  <section class="block reveal" id="reflection">
+    <div class="sec-num">08 — Reflection on Inclusive Design</div>
+    <h2>How inclusive was this research, really?</h2>
+    <p>This section reflects on the study's methods through the lens of inclusive design and co-research, drawing on Chapko et al.'s <span class="cite" data-ref="chapko2020">(2020)</span> work with co-researchers with learning disabilities, in which those historically studied became the researchers. Co-research treats expertise as distributed and the process as something designed <em>with</em>, not <em>for</em>, the people it concerns.</p>
+    <h3>Where the workshop approached inclusive principles</h3>
+    <p>The study was conducted by insiders — DSAI students researching DSAI students — so those most affected were also the interpreters. The open-ended format gave participants control over how they framed their experiences, lecturers left during the focus group to reduce power asymmetries, and theme interpretation among fellow students was less hierarchical than a traditional researcher–subject study.</p>
+    <h3>Where it fell short</h3>
+    <p>Participants were not involved in designing the study — question, format and analysis were all set before recruitment — nor in interpreting their own data, and were not consulted on whether the themes captured their meaning. The study also treated participants as a single category, without systematically addressing how AI's impact differs across international students, socioeconomic backgrounds, or prior AI access.</p>
+    <h3>Toward a more inclusive design</h3>
+    <p>A stronger version would redistribute decision-making: inviting students as co-researchers at the design stage, adding member-checking so participants could review the themes, and sampling for difference rather than uniformity. More broadly, it raises a question central to the unit — what does it mean to research students, as a student, inside an institution one depends on? Co-research troubles the researcher's position; here, that destabilisation is productive, forcing attention to power relations traditional methods leave invisible.</p>
+  </section>
+
+  <!-- SECTION 8: CONCLUSION -->
+  <section class="block reveal" id="conclusion">
+    <div class="sec-num">09 — Conclusion</div>
+    <h2>Students are not passive recipients</h2>
+    <p>This portfolio set out to investigate how AI has changed the way that students value their education. Through a workshop study with twelve DSAI undergraduates and thematic analysis of written responses and focus group discussion, it identified five interconnected themes — spanning effort and learning, authenticity and ownership, critical engagement, perceptions of value, and graduate prospects.</p>
+    <p>Taken together, the findings show that students are actively considering what "value" means in higher education, across cognitive, personal, financial and labour-market dimensions at once. This adoption is shaped by AI but not reducible to it: financial pressures, employer behaviour and the social dimensions of university life all contribute. Responses must therefore engage with the full picture rather than treating AI as the sole variable. What this study contributes is a grounded account of how students training in AI themselves understand these changes — perspectives that matter both because they will enter a labour market reshaped by the technologies they study, and because how they value their education will shape how the next generation of AI practitioners approaches the ethics of their own work.</p>
+  </section>
+
+  <!-- REFERENCES -->
+  <section class="block reveal" id="refs">
+    <div class="sec-num">10 — References</div>
+    <h2>References</h2>
+    <ul class="ref-list">
+      <li>Advance HE and HEPI (2024) <em>Student Academic Experience Survey 2024</em>.</li>
+      <li>BM Magazine (2025) 'AI takes entry-level jobs as big four slash graduate hiring', <em>Business Matters</em>, 25 June.</li>
+      <li>Chapko, D. et al. (2020) '"We have been magnified for years — Now you are under the microscope!": Co-researchers with Learning Disabilities Created an Online Survey to Challenge Public Understanding of Learning Disabilities', <em>Proceedings of the 2020 CHI Conference on Human Factors in Computing Systems</em>, pp. 1–17. doi: 10.1145/3313831.3376278.</li>
+      <li>Department for Education (2024) <em>Student fees and maintenance loan increase: what you need to know</em>.</li>
+      <li>Department for Education (2025) <em>Student loan forecasts for England: financial year 2024-25</em>.</li>
+      <li>IFOW (2025) <em>The impact of AI on entry-level jobs: A graduate perspective</em>. Institute for the Future of Work.</li>
+      <li>IPPR (2024) <em>Up to 8 million UK jobs at risk from AI unless government acts</em>. Institute for Public Policy Research.</li>
+      <li>Milano, S., McGrane, J.A. and Leonelli, S. (2023) 'Large language models challenge the future of higher education', <em>Nature Machine Intelligence</em>, 5(4), pp. 333–334. doi: 10.1038/s42256-023-00644-2.</li>
+      <li>Miao, F. and Shiohira, K. (2024) <em>AI Competency Framework for Students</em>. Paris: UNESCO.</li>
+      <li>The Open University (2025) <em>A Framework for the Learning and Teaching of Critical AI Literacy Skills</em>.</li>
+      <li>Stilgoe, J., Owen, R. and Macnaghten, P. (2013) 'Developing a framework for responsible innovation', <em>Research Policy</em>, 42(9), pp. 1568–1580. doi: 10.1016/j.respol.2013.05.008.</li>
+      <li>Stephenson, R. and Armstrong, C. (2026) <em>Student Generative AI Survey 2026</em> (HEPI Report 199). Higher Education Policy Institute.</li>
+      <li>Times Higher Education (2026) 'Will the UK's tuition loans debate prompt another youthquake?', <em>Times Higher Education</em>, 19 February.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="fwrap">
+    <div>VALUING EDUCATION IN THE AGE OF AI</div>
+    <div>Grace Nguyen · BSc Data Science &amp; AI · University of the Arts London</div>
+    <div>Critical 6: Responsible Data Science — Equity, Consent, Innovation &amp; Ethics · 2026</div>
+    <div class="disc">Use of AI: AI tools were used for ideation, structuring and editorial feedback during the preparation of this portfolio. All final prose, analysis, interpretation and conclusions are the author's own. Participant evidence has been paraphrased rather than quoted to protect participant anonymity on this public site; full data is held in the private appendices submitted to the unit leader.</div>
+  </div>
+</footer>
+
+<script>
+// ---------- Header visualisation: 5 themes as connected nodes over a map ----------
+const svg = d3.select("#viz");
+const tip = document.getElementById("tip");
+let W = window.innerWidth, H = window.innerHeight;
+
+const themes = [
+  { id:1, label:"Effort & active involvement", color:"#c1440e", x:0.18, y:0.30 },
+  { id:2, label:"Authenticity & ownership",     color:"#2d4a3e", x:0.38, y:0.58 },
+  { id:3, label:"Critical engagement",          color:"#3a5a7a", x:0.55, y:0.32 },
+  { id:4, label:"Shifting value of education",   color:"#b08544", x:0.72, y:0.62 },
+  { id:5, label:"AI literacy: opportunity/threat",color:"#7a4a6e", x:0.86, y:0.34 }
+];
+
+// abstract "map" graticule — evokes geography (the international/UK student dimension)
+function drawMap(g){
+  g.selectAll("*").remove();
+  const grat = g.append("g").attr("opacity",0.5);
+  // longitude lines
+  for(let i=0;i<=12;i++){
+    const x = (i/12)*W;
+    grat.append("path")
+      .attr("d", `M${x},0 C${x+40},${H*0.33} ${x-40},${H*0.66} ${x},${H}`)
+      .attr("fill","none").attr("stroke","#cfc7b6").attr("stroke-width",0.7);
+  }
+  // latitude lines
+  for(let j=0;j<=8;j++){
+    const y=(j/8)*H;
+    grat.append("path")
+      .attr("d",`M0,${y} C${W*0.33},${y-26} ${W*0.66},${y+26} ${W},${y}`)
+      .attr("fill","none").attr("stroke","#cfc7b6").attr("stroke-width",0.7);
+  }
+  // a couple of soft landmass blobs for atmosphere
+  const blob = (cx,cy,r,c)=>g.append("circle").attr("cx",cx).attr("cy",cy).attr("r",r)
+      .attr("fill",c).attr("opacity",0.06);
+  blob(W*0.30,H*0.45,Math.min(W,H)*0.22,"#2d4a3e");
+  blob(W*0.74,H*0.5,Math.min(W,H)*0.18,"#c1440e");
+}
+
+let nodeSel, linkSel, mapG, pathSel;
+function build(){
+  svg.attr("width",W).attr("height",H);
+  svg.selectAll("*").remove();
+  mapG = svg.append("g").attr("class","map");
+  drawMap(mapG);
+
+  const layer = svg.append("g").attr("class","layer");
+  const pts = themes.map(t=>({...t, px:t.x*W, py:t.y*H}));
+
+  // connecting path (the "connected scatterplot" line)
+  const line = d3.line().x(d=>d.px).y(d=>d.py).curve(d3.curveCatmullRom.alpha(0.6));
+  pathSel = layer.append("path")
+    .attr("d", line(pts))
+    .attr("fill","none").attr("stroke","#1a1a17").attr("stroke-width",1.4)
+    .attr("opacity",0.55);
+  const pathLen = pathSel.node().getTotalLength();
+  pathSel.attr("stroke-dasharray", pathLen).attr("stroke-dashoffset", pathLen);
+
+  // travelling pulse that rides along the path
+  const pulse = layer.append("circle")
+    .attr("r", 4.5).attr("fill", "#c1440e").attr("opacity", 0).attr("class","scatter-pulse");
+
+  // continuous replay loop: draw in -> hold -> fade out -> reset -> repeat
+  function drawLoop(){
+    pathSel
+      .attr("stroke-dashoffset", pathLen)
+      .attr("opacity", 0.55)
+      .transition().duration(2600).ease(d3.easeCubicInOut)
+        .attr("stroke-dashoffset", 0)
+      .transition().duration(900)        // hold fully drawn
+      .transition().duration(900)        // fade out
+        .attr("opacity", 0)
+      .on("end", drawLoop);
+
+    // pulse rides the path in sync with the draw-in phase
+    pulse.attr("opacity", 0.9)
+      .transition().duration(2600).ease(d3.easeCubicInOut)
+        .attrTween("transform", function(){
+          return function(t){
+            const pt = pathSel.node().getPointAtLength(t*pathLen);
+            return `translate(${pt.x},${pt.y})`;
+          };
+        })
+      .transition().duration(700).attr("opacity",0);
+  }
+  drawLoop();
+
+  // nodes
+  const ng = layer.selectAll("g.node").data(pts).enter().append("g")
+    .attr("class","node").attr("transform",d=>`translate(${d.px},${d.py})`)
+    .style("cursor","pointer");
+
+  ng.append("circle").attr("r",0).attr("fill",d=>d.color).attr("opacity",0.9)
+    .transition().delay((d,i)=>400+i*260).duration(600).ease(d3.easeBackOut).attr("r",10);
+  ng.append("circle").attr("r",10).attr("fill","none")
+    .attr("stroke",d=>d.color).attr("stroke-width",1.2).attr("opacity",0.4)
+    .style("transform-origin","center")
+    .append("animate").attr("attributeName","r").attr("values","10;26;10")
+    .attr("dur","3s").attr("repeatCount","indefinite");
+  ng.append("text").text(d=>d.id).attr("text-anchor","middle").attr("dy","0.34em")
+    .attr("fill","#f4f1ea").style("font-family","'JetBrains Mono',monospace")
+    .style("font-size","10px").style("pointer-events","none")
+    .attr("opacity",0).transition().delay((d,i)=>600+i*260).duration(400).attr("opacity",1);
+
+  ng.on("mousemove",(e,d)=>{
+      tip.style.opacity=1; tip.style.left=(e.clientX+16)+"px"; tip.style.top=(e.clientY+16)+"px";
+      tip.innerHTML=`<span class="tt">Theme 0${d.id}</span>${d.label}`;
+    })
+    .on("mouseleave",()=>{tip.style.opacity=0;})
+    .on("click",()=>{document.getElementById("findings").scrollIntoView({behavior:"smooth"});});
+
+  nodeSel = ng;
+}
+build();
+
+// parallax depth for pseudo-3D feel
+window.addEventListener("mousemove",(e)=>{
+  const dx=(e.clientX/W-0.5), dy=(e.clientY/H-0.5);
+  if(mapG) mapG.attr("transform",`translate(${dx*-30},${dy*-18})`);
+  if(nodeSel) nodeSel.attr("transform",d=>`translate(${d.px+dx*22},${d.py+dy*14})`);
+});
+window.addEventListener("resize",()=>{W=window.innerWidth;H=window.innerHeight;build();});
+
+// scroll reveal
+const io=new IntersectionObserver((es)=>{es.forEach(x=>{if(x.isIntersecting)x.target.classList.add("in");});},{threshold:0.12});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+// ---------- Interactive Harvard citations (hover + tap) ----------
+const REFS = {
+  hepi2026: {
+    tag: "HEPI · 2026",
+    full: "Stephenson, R. and Armstrong, C. (2026) Student Generative AI Survey 2026 (HEPI Report 199). Higher Education Policy Institute.",
+    url: "https://www.hepi.ac.uk/reports/student-generative-ai-survey-2026/"
+  },
+  milano2023: {
+    tag: "Nature Machine Intelligence · 2023",
+    full: "Milano, S., McGrane, J.A. and Leonelli, S. (2023) 'Large language models challenge the future of higher education', Nature Machine Intelligence, 5(4), pp. 333–334.",
+    url: "https://doi.org/10.1038/s42256-023-00644-2"
+  },
+  dfe2025: {
+    tag: "Department for Education · 2025",
+    full: "Department for Education (2025) Student loan forecasts for England: financial year 2024-25.",
+    url: "https://explore-education-statistics.service.gov.uk/find-statistics/student-loan-forecasts-for-england/2024-25"
+  },
+  dfe2024: {
+    tag: "Department for Education · 2024",
+    full: "Department for Education (2024) Student fees and maintenance loan increase: what you need to know.",
+    url: "https://educationhub.blog.gov.uk/2024/11/student-fees-and-maintenance-loan-increase-what-you-need-to-know/"
+  },
+  the2026: {
+    tag: "Times Higher Education · 2026",
+    full: "Times Higher Education (2026) 'Will the UK's tuition loans debate prompt another youthquake?', 19 February.",
+    url: "https://www.timeshighereducation.com/depth/will-uks-revived-student-loans-debate-spark-another-youthquake"
+  },
+  ippr2024: {
+    tag: "IPPR · 2024",
+    full: "IPPR (2024) Up to 8 million UK jobs at risk from AI unless government acts. Institute for Public Policy Research.",
+    url: "https://www.ippr.org/media-office/up-to-8-million-uk-jobs-at-risk-from-ai-unless-government-acts-finds-ippr"
+  },
+  bm2025: {
+    tag: "Business Matters · 2025",
+    full: "BM Magazine (2025) 'AI takes entry-level jobs as big four slash graduate hiring', Business Matters, 25 June.",
+    url: "https://bmmagazine.co.uk/news/big-four-cut-graduate-jobs-ai/"
+  },
+  ifow2025: {
+    tag: "Institute for the Future of Work · 2025",
+    full: "IFOW (2025) The impact of AI on entry-level jobs: A graduate perspective.",
+    url: "https://www.ifow.org/news-articles/the-impact-of-ai-on-entry-level-jobs-a-graduate-perspective"
+  },
+  chapko2020: {
+    tag: "CHI '20 · 2020",
+    full: "Chapko, D. et al. (2020) '\"We have been magnified for years — Now you are under the microscope!\"...', Proceedings of the 2020 CHI Conference on Human Factors in Computing Systems, pp. 1–17.",
+    url: "https://doi.org/10.1145/3313831.3376278"
+  },
+  unesco2024: {
+    tag: "UNESCO · 2024",
+    full: "Miao, F. and Shiohira, K. (2024) AI Competency Framework for Students. Paris: UNESCO.",
+    url: "https://www.unesco.org/en/digital-education/ai-future-learning"
+  },
+  ou2025: {
+    tag: "The Open University · 2025",
+    full: "The Open University (2025) A Framework for the Learning and Teaching of Critical AI Literacy Skills.",
+    url: "https://www.open.ac.uk/blogs/learning-design/wp-content/uploads/2025/01/OU-Critical-AI-Literacy-framework-2025-external-sharing.pdf"
+  },
+  stilgoe2013: {
+    tag: "Research Policy · 2013",
+    full: "Stilgoe, J., Owen, R. and Macnaghten, P. (2013) 'Developing a framework for responsible innovation', Research Policy, 42(9), pp. 1568–1580.",
+    url: "https://doi.org/10.1016/j.respol.2013.05.008"
+  }
+};
+
+const pop = document.createElement("div");
+pop.className = "cite-pop";
+document.body.appendChild(pop);
+let activeCite = null, hideTimer = null;
+
+function showPop(el){
+  const key = el.getAttribute("data-ref");
+  const r = REFS[key];
+  if(!r) return;
+  clearTimeout(hideTimer);
+  pop.innerHTML = `<span class="cp-tag">${r.tag}</span>${r.full}<a href="${r.url}" target="_blank" rel="noopener">${r.url} ↗</a>`;
+  const rect = el.getBoundingClientRect();
+  // position: prefer above, flip below if not enough room
+  pop.classList.add("show");
+  const pr = pop.getBoundingClientRect();
+  let top = rect.top - pr.height - 10;
+  if(top < 70) top = rect.bottom + 10;
+  let left = rect.left + rect.width/2 - pr.width/2;
+  left = Math.max(12, Math.min(left, window.innerWidth - pr.width - 12));
+  pop.style.top = top + "px";
+  pop.style.left = left + "px";
+  if(activeCite) activeCite.classList.remove("active");
+  activeCite = el; el.classList.add("active");
+}
+function hidePop(){
+  hideTimer = setTimeout(()=>{
+    pop.classList.remove("show");
+    if(activeCite){ activeCite.classList.remove("active"); activeCite=null; }
+  }, 120);
+}
+
+document.querySelectorAll(".cite").forEach(el=>{
+  // desktop hover
+  el.addEventListener("mouseenter", ()=>showPop(el));
+  el.addEventListener("mouseleave", hidePop);
+  // mobile / click tap
+  el.addEventListener("click", (e)=>{
+    e.preventDefault();
+    if(activeCite === el){ hidePop(); }
+    else { showPop(el); }
+  });
+});
+// keep pop open while hovering it (so the link is clickable)
+pop.addEventListener("mouseenter", ()=>clearTimeout(hideTimer));
+pop.addEventListener("mouseleave", hidePop);
+// tap outside closes on mobile
+document.addEventListener("click",(e)=>{
+  if(!e.target.closest(".cite") && !e.target.closest(".cite-pop")){
+    pop.classList.remove("show");
+    if(activeCite){ activeCite.classList.remove("active"); activeCite=null; }
+  }
+});
+// reposition/hide on scroll
+window.addEventListener("scroll", ()=>{ pop.classList.remove("show"); if(activeCite){activeCite.classList.remove("active"); activeCite=null;} }, {passive:true});
+// ---------- 3D NEURAL BRAIN (Three.js) for the Analysis band ----------
+(function(){
+  const container = document.getElementById("brain");
+  const labelLayer = document.getElementById("brain-labels");
+  if(!container || !window.THREE) return;
+
+  // Real codes + theme names from the thematic analysis.
+  // THEMES (large labels) + CODES (smaller star-words).
+  const THEMES = [
+    "Effort & active involvement",
+    "Authenticity & ownership",
+    "Critical engagement",
+    "Shifting value of education",
+    "AI literacy"
+  ];
+  const CODES = [
+    "fallback","reduced pressure","lower standards","right-way use","faster learning",
+    "loss of learning","earned confidence","human voice","speed vs flair","recognisable AI style",
+    "repetition","proofreading","pride in effort","ownership","satisfaction from difficulty",
+    "verification","hallucination","fabricated references","double-checking","vague output",
+    "restarting work","big-picture thinking","cost","tuition fees","student debt",
+    "loan interest","value for money","substitute teacher","social capital","networks",
+    "media perception","cost-cutting","cheap labour","entry-level risk","generational unfairness",
+    "future-proofing","opportunity","threat"
+  ];
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+  camera.position.z = 272;
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  function sizeIt(){
+    const w = container.clientWidth, h = container.clientHeight || 600;
+    renderer.setSize(w, h);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+
+  // ----- brain-shaped point cloud -----
+  // Build a recognisable brain silhouette: two ellipsoidal hemispheres,
+  // flattened bottom, with surface "folds" via noise. Points fill the volume shell.
+  function brainPoint(){
+    // pick a hemisphere
+    const side = Math.random() < 0.5 ? -1 : 1;
+    // spherical-ish coords biased to a brain profile
+    let u = Math.random()*Math.PI;        // 0..pi (top to bottom)
+    let v = Math.random()*Math.PI;        // around
+    // base ellipsoid radii (brain is wider front-back than tall)
+    const R = 95;
+    let x = (R*1.15) * Math.sin(u)*Math.cos(v);   // front-back length
+    let y = (R*0.78) * Math.cos(u);               // height
+    let z = (R*0.62) * Math.sin(u)*Math.sin(v);   // width per hemisphere
+    // offset hemisphere sideways + gap (longitudinal fissure)
+    z = Math.abs(z)*side + side*10;
+    // flatten the underside (brains are flat-ish on the bottom)
+    if(y < -R*0.35) y = -R*0.35 + (y + R*0.35)*0.4;
+    // tuck the front (frontal lobe) and stretch the back slightly
+    if(x > 0) x *= 1.05;
+    // surface folds: push points onto a shell with wrinkle noise
+    const wob = 1 + 0.08*Math.sin(u*9)*Math.cos(v*7) + 0.05*Math.sin(v*11);
+    x*=wob; y*=wob; z*=wob;
+    return new THREE.Vector3(x,y,z);
+  }
+
+  // neuron points
+  const NUM = 620;
+  const positions = [];
+  for(let i=0;i<NUM;i++){ const p=brainPoint(); positions.push(p.x,p.y,p.z); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
+
+  // glowing round sprite for each neuron
+  const sprite = (function(){
+    const c=document.createElement("canvas"); c.width=c.height=64;
+    const g=c.getContext("2d");
+    const grad=g.createRadialGradient(32,32,0,32,32,32);
+    grad.addColorStop(0,"rgba(255,255,255,1)");
+    grad.addColorStop(0.25,"rgba(200,225,255,0.9)");
+    grad.addColorStop(0.6,"rgba(120,170,255,0.35)");
+    grad.addColorStop(1,"rgba(120,170,255,0)");
+    g.fillStyle=grad; g.fillRect(0,0,64,64);
+    const t=new THREE.CanvasTexture(c); return t;
+  })();
+  const pMat = new THREE.PointsMaterial({
+    size: 6.5, map: sprite, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending, color: 0xcfe4ff, opacity: 0.95
+  });
+  const points = new THREE.Points(geo, pMat);
+
+  // synapse lines: connect each neuron to a couple of nearby ones
+  const linePos = [];
+  const pv = [];
+  for(let i=0;i<NUM;i++) pv.push(new THREE.Vector3(positions[i*3],positions[i*3+1],positions[i*3+2]));
+  for(let i=0;i<NUM;i++){
+    // find 2 nearest among a random sample (cheap)
+    let best=[]; 
+    for(let s=0;s<14;s++){
+      const j=(i+1+Math.floor(Math.random()*40))%NUM;
+      const d=pv[i].distanceTo(pv[j]);
+      best.push([d,j]);
+    }
+    best.sort((a,b)=>a[0]-b[0]);
+    for(let k=0;k<2;k++){
+      const j=best[k][1];
+      if(best[k][0]<34){
+        linePos.push(pv[i].x,pv[i].y,pv[i].z, pv[j].x,pv[j].y,pv[j].z);
+      }
+    }
+  }
+  const lgeo=new THREE.BufferGeometry();
+  lgeo.setAttribute("position",new THREE.Float32BufferAttribute(linePos,3));
+  const lMat=new THREE.LineBasicMaterial({color:0x5a8fd6, transparent:true, opacity:0.16, blending:THREE.AdditiveBlending, depthWrite:false});
+  const lines=new THREE.LineSegments(lgeo,lMat);
+
+  const brainGroup = new THREE.Group();
+  brainGroup.add(lines); brainGroup.add(points);
+  scene.add(brainGroup);
+
+  // ----- word labels anchored to 3D positions -----
+  // themes get prominent anchor points spread across the lobes; codes get scattered shell points.
+  const labelData = [];
+  function makeLabel(text, vec, isTheme){
+    const el=document.createElement("div");
+    el.className="neuron-word"+(isTheme?" theme":"");
+    el.textContent=text;
+    el.style.fontSize = isTheme ? "clamp(19px,2.4vw,34px)" : "clamp(12px,1.4vw,18px)";
+    labelLayer.appendChild(el);
+    labelData.push({el, v:vec.clone(), isTheme});
+  }
+  // distribute theme anchors on the outer shell, well-spaced
+  const themeAnchors = [
+    new THREE.Vector3(70, 38, 55),
+    new THREE.Vector3(-72, 30, 50),
+    new THREE.Vector3(60, -28, -52),
+    new THREE.Vector3(-58, -34, -48),
+    new THREE.Vector3(0, 70, 18)
+  ];
+  THEMES.forEach((t,i)=>makeLabel(t, themeAnchors[i], true));
+  // codes scattered on shell points
+  CODES.forEach((c,i)=>{
+    const p = pv[Math.floor((i+3)*(NUM/CODES.length))%NUM].clone().multiplyScalar(1.04);
+    makeLabel(c, p, false);
+  });
+
+  // ----- interaction state -----
+  let targetRotX=0, targetRotY=0, curRotX=0, curRotY=0;
+  let autoY=0;
+  const band = document.getElementById("analysis");
+  const stage = container.parentElement;            // .brain-stage
+
+  stage.style.cursor="grab";
+  let dragging=false, lastX=0,lastY=0;
+  function onDown(e){dragging=true; stage.style.cursor="grabbing"; lastX=(e.touches?e.touches[0].clientX:e.clientX); lastY=(e.touches?e.touches[0].clientY:e.clientY);}
+  function onUp(){dragging=false; stage.style.cursor="grab";}
+  function onMove(e){
+    const cx=(e.touches?e.touches[0].clientX:e.clientX), cy=(e.touches?e.touches[0].clientY:e.clientY);
+    if(dragging){
+      targetRotY += (cx-lastX)*0.005;
+      targetRotX += (cy-lastY)*0.005;
+      lastX=cx; lastY=cy;
+    } else {
+      const r=stage.getBoundingClientRect();
+      const nx=(cx-r.left)/r.width-0.5, ny=(cy-r.top)/r.height-0.5;
+      targetRotY = nx*0.6; targetRotX = ny*0.4;
+    }
+  }
+  stage.addEventListener("mousedown",onDown); window.addEventListener("mouseup",onUp);
+  stage.addEventListener("mousemove",onMove);
+  stage.addEventListener("touchstart",onDown,{passive:true});
+  window.addEventListener("touchend",onUp);
+  stage.addEventListener("touchmove",onMove,{passive:true});
+
+  // ----- gentle scroll drift on the brain for depth -----
+  function parallax(){
+    const r = stage.getBoundingClientRect();
+    const total = window.innerHeight + r.height;
+    let p = total>0 ? (window.innerHeight - r.top)/total : 0;
+    p = Math.max(0, Math.min(1, p));
+    brainGroup.position.y = (p-0.5) * 20;
+  }
+  window.addEventListener("scroll", parallax, {passive:true});
+
+  // ----- render loop -----
+  const proj = new THREE.Vector3();
+  function project(v){
+    proj.copy(v).applyMatrix4(brainGroup.matrixWorld).project(camera);
+    return proj;
+  }
+  let running=false;
+  function animate(){
+    requestAnimationFrame(animate);
+    if(!running) return;
+    autoY += 0.0016;
+    curRotY += (targetRotY + autoY - curRotY)*0.06;
+    curRotX += (targetRotX - curRotX)*0.06;
+    brainGroup.rotation.y = curRotY;
+    brainGroup.rotation.x = curRotX;
+    brainGroup.updateMatrixWorld();
+    renderer.render(scene,camera);
+
+    // update labels
+    const w=container.clientWidth, h=container.clientHeight||600;
+    for(const L of labelData){
+      const p=project(L.v);
+      if(p.z>1){ L.el.style.opacity="0"; continue; }
+      const sx=(p.x*0.5+0.5)*w, sy=(-p.y*0.5+0.5)*h;
+      // fade by depth (z in clip space ~ -1 near .. 1 far)
+      const depth = 1-(p.z*0.5+0.5);
+      const op = L.isTheme ? Math.max(0.7, Math.pow(depth,0.55)) : Math.max(0.32, Math.pow(depth,0.8));
+      L.el.style.left=sx+"px"; L.el.style.top=sy+"px"; L.el.style.opacity=op.toFixed(2);
+    }
+  }
+
+  // start only when band is in view (perf + battery)
+  const vio=new IntersectionObserver((es)=>{es.forEach(x=>{running=x.isIntersecting;});},{threshold:0.02});
+  vio.observe(band);
+
+  function resize(){ sizeIt(); parallax(); }
+  window.addEventListener("resize",resize);
+  // initial size after layout settles
+  setTimeout(()=>{ sizeIt(); parallax(); animate(); }, 60);
+})();
+// ---------- FORCE CODE-MAP: push-physics + theme gathering ----------
+(function(){
+  const svgEl = document.getElementById("scatter");
+  if(!svgEl || !window.d3) return;
+
+  /* =========================================================
+     DATA TABLE — EDIT THESE NUMBERS
+     Each code: [label, theme(1-5), Session1 count, Session2 count]
+     Replace the two trailing 0s with your real frequency counts.
+     Counts scale each word's size; theme sets its colour & home cluster.
+     ========================================================= */
+  const THEME_NAMES = {
+    1:"Effort & active involvement",
+    2:"Authenticity & ownership",
+    3:"Critical engagement",
+    4:"Shifting value of education",
+    5:"AI literacy: opportunity/threat"
+  };
+  const THEME_COLOR = {1:"#c1440e",2:"#2d4a3e",3:"#3a5a7a",4:"#b08544",5:"#7a4a6e"};
+
+  const DATA = [
+    ["fallback",1,0,0],["reduced pressure",1,0,0],["lower standards",1,0,0],
+    ["right-way use",1,0,0],["faster learning",1,0,0],["loss of learning",1,0,0],
+    ["earned confidence",1,0,0],
+    ["human voice",2,0,0],["speed vs flair",2,0,0],["recognisable AI style",2,0,0],
+    ["repetition",2,0,0],["proofreading",2,0,0],["pride in effort",2,0,0],
+    ["ownership",2,0,0],["satisfaction from difficulty",2,0,0],
+    ["verification",3,0,0],["hallucination",3,0,0],["fabricated references",3,0,0],
+    ["double-checking",3,0,0],["vague output",3,0,0],["restarting work",3,0,0],
+    ["big-picture thinking",3,0,0],
+    ["cost",4,0,0],["tuition fees",4,0,0],["student debt",4,0,0],["loan interest",4,0,0],
+    ["value for money",4,0,0],["substitute teacher",4,0,0],["social capital",4,0,0],
+    ["networks",4,0,0],["media perception",4,0,0],
+    ["cost-cutting",5,0,0],["cheap labour",5,0,0],["entry-level risk",5,0,0],
+    ["generational unfairness",5,0,0],["future-proofing",5,0,0],["opportunity",5,0,0],
+    ["threat",5,0,0]
+  ].map((d,i)=>({id:i, label:d[0], theme:d[1], s1:d[2], s2:d[3]}));
+
+  const VBW=940, VBH=560;
+  const svg=d3.select(svgEl).attr("viewBox",`0 0 ${VBW} ${VBH}`).attr("preserveAspectRatio","xMidYMid meet");
+  svg.selectAll("*").remove();
+
+  const readout=document.getElementById("scatterReadout");
+  const defaultMsg="Move your mouse through the words to push them · pause on a word to gather its theme";
+  readout.textContent=defaultMsg;
+
+  // five theme home clusters spread across the canvas
+  const homes={
+    1:{x:VBW*0.20,y:VBH*0.30},
+    2:{x:VBW*0.50,y:VBH*0.22},
+    3:{x:VBW*0.80,y:VBH*0.33},
+    4:{x:VBW*0.30,y:VBH*0.74},
+    5:{x:VBW*0.72,y:VBH*0.74}
+  };
+  // word radius scales gently with total frequency (placeholder 0 -> base size, still readable)
+  function radius(d){ return 16 + Math.sqrt(d.s1+d.s2)*6; }
+  DATA.forEach(d=>{
+    // start scattered around home so words are visible even with 0 counts
+    const a=Math.random()*Math.PI*2, r=40+Math.random()*70;
+    d.x=homes[d.theme].x+Math.cos(a)*r;
+    d.y=homes[d.theme].y+Math.sin(a)*r;
+    d.r=radius(d);
+  });
+
+  // node groups: pill + label
+  const node=svg.selectAll("g.bean").data(DATA).enter().append("g")
+    .attr("class","bean").style("cursor","default");
+  node.append("rect").attr("class","bean-bg")
+    .attr("rx",11).attr("height",22)
+    .attr("fill",d=>THEME_COLOR[d.theme]).attr("opacity",0.92);
+  node.append("text").attr("class","bean-label")
+    .attr("dy","0.34em").attr("fill","#fff")
+    .style("font-family","'JetBrains Mono',monospace").style("font-size","11px")
+    .style("pointer-events","none").text(d=>d.label);
+  // size pill to text
+  function measurePills(){
+    node.each(function(d){
+      const t=d3.select(this).select("text").node();
+      const w=t.getComputedTextLength()+22;
+      d.w=w; d.h=22;
+      d3.select(this).select("rect").attr("width",w).attr("x",-w/2).attr("y",-11);
+      d3.select(this).select("text").attr("x",0).attr("text-anchor","middle");
+      d.r=Math.max(w,d.h)/2 + 2;
+    });
+  }
+  measurePills();
+  // Fonts load with font-display:swap, so the first measurement above may use a
+  // fallback metric. Re-measure once the real webfonts are ready so pill widths
+  // match the actual JetBrains Mono glyphs (prevents overflow / over-wide pills).
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=>{ measurePills(); sim.alpha(0.3).restart(); });
+  }
+
+  // mouse position in svg coords
+  let mouse={x:-9999,y:-9999,active:false};
+  function toSvg(e){
+    const pt=svgEl.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX);
+    const cy=(e.touches?e.touches[0].clientY:e.clientY);
+    return { x:(cx-pt.left)/pt.width*VBW, y:(cy-pt.top)/pt.height*VBH };
+  }
+  svgEl.addEventListener("mousemove",e=>{const m=toSvg(e);mouse.x=m.x;mouse.y=m.y;mouse.active=true; sim.alphaTarget(0.5).restart(); scheduleHover(m);});
+  svgEl.addEventListener("mouseleave",()=>{mouse.active=false; lockedTheme=null; sim.alphaTarget(0); clearTimeout(hoverT); node.classed("dimmed",false); readout.textContent=defaultMsg;});
+  svgEl.addEventListener("touchmove",e=>{const m=toSvg(e);mouse.x=m.x;mouse.y=m.y;mouse.active=true; sim.alphaTarget(0.5).restart();},{passive:true});
+  svgEl.addEventListener("touchend",()=>{mouse.active=false; sim.alphaTarget(0);});
+
+  // pause-to-gather: if the mouse rests near a word, lock its theme
+  let lockedTheme=null, hoverT=null;
+  function scheduleHover(m){
+    clearTimeout(hoverT);
+    hoverT=setTimeout(()=>{
+      // find nearest word to the (now-rested) cursor
+      let best=null,bd=1e9;
+      DATA.forEach(d=>{const dx=d.x-m.x,dy=d.y-m.y,dist=dx*dx+dy*dy; if(dist<bd){bd=dist;best=d;}});
+      if(best && bd< (120*120)){
+        lockedTheme=best.theme;
+        node.classed("dimmed",n=>n.theme!==best.theme);
+        readout.textContent=`Theme: ${THEME_NAMES[best.theme]} · ${DATA.filter(n=>n.theme===best.theme).length} codes gathered`;
+        sim.alphaTarget(0.4).restart();
+      }
+    }, 380); // pause threshold
+  }
+
+  // custom force: cursor repulsion (push the beans) + theme gathering when locked
+  function forceCursor(alpha){
+    for(const d of DATA){
+      if(mouse.active){
+        const dx=d.x-mouse.x, dy=d.y-mouse.y;
+        const dist=Math.sqrt(dx*dx+dy*dy)||0.01;
+        const R=110;
+        if(dist<R){
+          const push=(1-dist/R)*alpha*26;
+          d.vx+=(dx/dist)*push; d.vy+=(dy/dist)*push;
+        }
+      }
+    }
+  }
+  function forceHome(alpha){
+    for(const d of DATA){
+      const home = homes[d.theme];
+      // when a theme is locked, its members pull tightly to home; others relax to their own homes
+      const k = (lockedTheme===d.theme) ? 0.12 : 0.018;
+      d.vx += (home.x - d.x)*k*alpha*4;
+      d.vy += (home.y - d.y)*k*alpha*4;
+    }
+  }
+
+  const sim=d3.forceSimulation(DATA)
+    .velocityDecay(0.78)
+    .force("collide", d3.forceCollide(d=>d.r+3).strength(0.9))
+    .force("cursor", forceCursor)
+    .force("home", forceHome)
+    .force("bound", (alpha)=>{
+      for(const d of DATA){
+        const pad=d.w/2+6;
+        if(d.x<pad) d.vx+=(pad-d.x)*0.2;
+        if(d.x>VBW-pad) d.vx+=((VBW-pad)-d.x)*0.2;
+        if(d.y<16) d.vy+=(16-d.y)*0.2;
+        if(d.y>VBH-16) d.vy+=((VBH-16)-d.y)*0.2;
+      }
+    })
+    .on("tick",()=>{ node.attr("transform",d=>`translate(${d.x},${d.y})`); })
+    .alpha(0.9).restart();
+  // keep it gently alive
+  sim.alphaMin(0.001);
+
+  // legend (hover gathers a theme too)
+  const legend=d3.select("#scatterLegend");
+  legend.selectAll("*").remove();
+  Object.keys(THEME_NAMES).forEach(k=>{
+    const s=legend.append("span").attr("title",THEME_NAMES[k]);
+    s.append("i").style("background",THEME_COLOR[k]);
+    s.append("span").text("0"+k+" "+THEME_NAMES[k]);
+    s.on("mouseenter",()=>{lockedTheme=+k; node.classed("dimmed",n=>n.theme!=+k); readout.textContent=`Theme: ${THEME_NAMES[k]}`; sim.alphaTarget(0.4).restart();})
+     .on("mouseleave",()=>{lockedTheme=null; node.classed("dimmed",false); readout.textContent=defaultMsg; sim.alphaTarget(0);});
+  });
+})();
+</script>
+</body>
+</html>
