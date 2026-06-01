@@ -8,7 +8,7 @@ reshaped the way they value their education.
 
 [Grace Portfolio](https://gracieng.github.io/)
 
-Opens in any browser — phone, tablet, or laptop. Nothing to install or download.
+Opens in any browser - phone, tablet, or laptop. Nothing to install or download.
 
 ## Preview
 
@@ -20,13 +20,13 @@ live portfolio link above, or download the repository and open `index.html`.
 ## What's inside
 
 - **Animated explainer video** of the study's design, questions, and method
-- **3D neural-brain visualisation** (Three.js) — the analysis vocabulary made
+- **3D neural-brain visualisation** (Three.js) - the analysis vocabulary made
   visible, with the five themes as bright anchors and the codes as glowing points
-- **Interactive code map** (D3 force simulation) — 38 participant-derived codes
+- **Interactive code map** (D3 force simulation) - 38 participant-derived codes
   that scatter away from the cursor and gather by theme when you pause on one.
   Both maps show only codes that emerged from coding what participants said;
   the study's own methodological terms (consent, GDPR, anonymisation) live in
-  the write-up, not the findings — keeping the visualisations an honest map of
+  the write-up, not the findings - keeping the visualisations an honest map of
   the five themes
 - **Full write-up**: executive summary, responsible research & innovation,
   background, method & ethics, findings, a proposed AI-literacy module,
@@ -42,7 +42,7 @@ live portfolio link above, or download the repository and open `index.html`.
 
 ## Run it offline
 
-The site is fully self-contained — no internet connection required. Download or
+The site is fully self-contained, no internet connection required. Download or
 clone this repository and open `index.html` in any browser by double-clicking it.
 
 ```
