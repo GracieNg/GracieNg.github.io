@@ -9,13 +9,16 @@ reshaped the way they value their education.
 
 ## 🔗 View the live site
 
-**https://gracieng.github.io**
+[Open the live portfolio](https://gracieng.github.io/)
 
 Opens in any browser — phone, tablet, or laptop. Nothing to install or download.
 
 ## Preview
 
-![Preview of the live portfolio](preview.png)
+[![Preview of the live portfolio](./preview.png)](https://gracieng.github.io/)
+
+If a Markdown viewer does not open local repository links directly, use the
+live portfolio link above, or download the repository and open `index.html`.
 
 ## What's inside
 
