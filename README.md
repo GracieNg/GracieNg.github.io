@@ -15,7 +15,7 @@ Opens in any browser — phone, tablet, or laptop. Nothing to install or downloa
 
 ## Preview
 
-<img src="https://gracieng.github.io/preview.png" alt="Preview of the offline portfolio page" width="100%">
+<img src="https://gracieng.github.io/preview-hero.png" alt="Preview of the offline portfolio page" width="100%">
 
 If a Markdown viewer does not open local repository links directly, use the
 live portfolio link above, or download the repository and open `index.html`.
@@ -52,7 +52,8 @@ clone this repository and open `index.html` in any browser by double-clicking it
 GracieNg.github.io/
 ├── index.html        the portfolio page (all styles + scripts inline)
 ├── ai_in_edu.mp4     animated explainer video
-├── preview.png       social/README preview image
+├── preview-hero.png  README preview image
+├── preview.png       social preview image
 ├── fonts/            self-hosted @font-face definitions (Fraunces, Newsreader, JetBrains Mono)
 └── lib/              local copies of d3.js and three.js
 ```
