@@ -1,15 +1,12 @@
 # How AI Changed the Way Students Value Their Education
 
 An interactive, self-contained web portfolio presenting a workshop study with
-undergraduate Data Science & AI students — exploring how generative AI has
+undergraduate Data Science & AI students, exploring how generative AI has
 reshaped the way they value their education.
-
-*Grace Nguyen · BSc Data Science & AI · University of the Arts London*
-*Critical 6: Responsible Data Science — Equity, Consent, Innovation & Ethics · 2026*
 
 ## 🔗 View the live site
 
-[Open the live portfolio](https://gracieng.github.io/)
+[Grace Portfolio](https://gracieng.github.io/)
 
 Opens in any browser — phone, tablet, or laptop. Nothing to install or download.
 
