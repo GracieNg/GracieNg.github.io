@@ -15,7 +15,7 @@ Opens in any browser — phone, tablet, or laptop. Nothing to install or downloa
 
 ## Preview
 
-[![Preview of the live portfolio](./preview.png)](https://gracieng.github.io/)
+![Preview of the live portfolio](https://raw.githubusercontent.com/GracieNg/GracieNg.github.io/main/preview.png)
 
 If a Markdown viewer does not open local repository links directly, use the
 live portfolio link above, or download the repository and open `index.html`.
